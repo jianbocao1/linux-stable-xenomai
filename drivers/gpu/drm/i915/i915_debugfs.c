@@ -3663,7 +3663,7 @@ i915_cache_sharing_get(void *data, u64 *val)
 	intel_wakeref_t wakeref;
 	u32 snpcr = 0;
 
-	if (!(IS_GEN_RANGE(dev_priv, 6, 7)))
+	if (!(IS_GEN_RANGE(dev_priv, 6, 12)))
 		return -ENODEV;
 
 	with_intel_runtime_pm(&dev_priv->runtime_pm, wakeref)
@@ -3680,7 +3680,7 @@ i915_cache_sharing_set(void *data, u64 val)
 	struct drm_i915_private *dev_priv = data;
 	intel_wakeref_t wakeref;
 
-	if (!(IS_GEN_RANGE(dev_priv, 6, 7)))
+	if (!(IS_GEN_RANGE(dev_priv, 6, 12)))
 		return -ENODEV;
 
 	if (val > 3)
@@ -3695,6 +3695,7 @@ i915_cache_sharing_set(void *data, u64 val)
 		snpcr &= ~GEN6_MBC_SNPCR_MASK;
 		snpcr |= val << GEN6_MBC_SNPCR_SHIFT;
 		I915_WRITE(GEN6_MBCUNIT_SNPCR, snpcr);
+		I915_WRITE(HSW_IDICR, I915_READ(HSW_IDICR) | IDIHASHMSK(0xf) | val << 22);
 	}
 
 	return 0;
