@@ -9,6 +9,7 @@
 #include <linux/sched/task.h>
 #include <linux/mmu_context.h>
 #include <linux/export.h>
+#include <linux/ipipe.h>
 
 #include <asm/mmu_context.h>
 
@@ -23,8 +24,10 @@ void use_mm(struct mm_struct *mm)
 {
 	struct mm_struct *active_mm;
 	struct task_struct *tsk = current;
+	unsigned long flags;
 
 	task_lock(tsk);
+	ipipe_mm_switch_protect(flags);
 	active_mm = tsk->active_mm;
 	if (active_mm != mm) {
 		mmgrab(mm);
@@ -32,6 +35,7 @@ void use_mm(struct mm_struct *mm)
 	}
 	tsk->mm = mm;
 	switch_mm(active_mm, mm, tsk);
+	ipipe_mm_switch_unprotect(flags);
 	task_unlock(tsk);
 #ifdef finish_arch_post_lock_switch
 	finish_arch_post_lock_switch();
