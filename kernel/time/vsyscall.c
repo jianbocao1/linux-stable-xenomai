@@ -9,6 +9,7 @@
 
 #include <linux/hrtimer.h>
 #include <linux/timekeeper_internal.h>
+#include <linux/ipipe_tickdev.h>
 #include <vdso/datapage.h>
 #include <vdso/helpers.h>
 #include <vdso/vsyscall.h>
@@ -114,6 +115,11 @@ void update_vsyscall(struct timekeeper *tk)
 	vdso_write_end(vdata);
 
 	__arch_sync_vdso_data(vdata);
+
+#ifdef CONFIG_IPIPE
+	if (tk->tkr_mono.clock == &clocksource_tsc)
+		ipipe_update_hostrt(tk);
+#endif
 }
 
 void update_vsyscall_tz(void)
