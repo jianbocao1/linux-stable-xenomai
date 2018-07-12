@@ -1739,6 +1739,7 @@ void syscall_init(void)
 	       X86_EFLAGS_IOPL|X86_EFLAGS_AC|X86_EFLAGS_NT);
 }
 
+#ifndef CONFIG_IPIPE
 DEFINE_PER_CPU(int, debug_stack_usage);
 DEFINE_PER_CPU(u32, debug_idt_ctr);
 
@@ -1757,6 +1758,7 @@ void debug_stack_reset(void)
 		load_current_idt();
 }
 NOKPROBE_SYMBOL(debug_stack_reset);
+#endif /* !CONFIG_IPIPE */
 
 #else	/* CONFIG_X86_64 */
 
