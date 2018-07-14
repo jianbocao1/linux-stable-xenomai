@@ -1311,6 +1311,12 @@ void do_user_addr_fault(struct pt_regs *regs,
 	vm_fault_t fault, major = 0;
 	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
 
+#ifdef CONFIG_IPIPE
+	if (ipipe_root_domain != ipipe_head_domain) {
+		trace_hardirqs_on();
+		hard_local_irq_enable();
+	}
+#endif
 	tsk = current;
 	mm = tsk->mm;
 
