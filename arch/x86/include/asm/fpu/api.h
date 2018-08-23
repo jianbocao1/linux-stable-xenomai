@@ -12,6 +12,10 @@
 #define _ASM_X86_FPU_API_H
 #include <linux/bottom_half.h>
 
+#ifdef CONFIG_IPIPE
+#include <linux/ipipe.h>
+#endif
+
 /*
  * Use kernel_fpu_begin/end() if you intend to use FPU in kernel context. It
  * disables preemption so be careful if you intend to use it for long periods
@@ -32,14 +36,29 @@ extern void fpregs_mark_activate(void);
  */
 static inline void fpregs_lock(void)
 {
+#ifdef CONFIG_IPIPE
+	unsigned long flags;
+
+	flags = hard_preempt_disable();
+#else
 	preempt_disable();
+#endif
 	local_bh_disable();
 }
 
 static inline void fpregs_unlock(void)
 {
+#ifdef CONFIG_IPIPE
+	unsigned long flags;
+#endif
+
 	local_bh_enable();
+
+#ifdef CONFIG_IPIPE
+	hard_preempt_enable(flags);
+#else
 	preempt_enable();
+#endif
 }
 
 #ifdef CONFIG_X86_DEBUG_FPU

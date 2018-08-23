@@ -36,17 +36,12 @@ union fpregs_state init_fpstate __read_mostly;
  *
  *   - to debug kernel_fpu_begin()/end() correctness
  */
-static DEFINE_PER_CPU(bool, in_kernel_fpu);
+DEFINE_PER_CPU(bool, in_kernel_fpu);
 
 /*
  * Track which context is using the FPU on the CPU:
  */
 DEFINE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
-
-static bool kernel_fpu_disabled(void)
-{
-	return this_cpu_read(in_kernel_fpu);
-}
 
 static bool interrupted_kernel_fpu_idle(void)
 {
@@ -84,9 +79,12 @@ EXPORT_SYMBOL(irq_fpu_usable);
 
 void kernel_fpu_begin(void)
 {
-	preempt_disable();
+	unsigned long flags;
 
+	preempt_disable();
 	WARN_ON_FPU(!irq_fpu_usable());
+
+	flags = hard_cond_local_irq_save();
 	WARN_ON_FPU(this_cpu_read(in_kernel_fpu));
 
 	this_cpu_write(in_kernel_fpu, true);
@@ -101,6 +99,7 @@ void kernel_fpu_begin(void)
 		copy_fpregs_to_fpstate(&current->thread.fpu);
 	}
 	__cpu_invalidate_fpregs_state();
+	hard_cond_local_irq_restore(flags);
 
 	if (boot_cpu_has(X86_FEATURE_XMM))
 		ldmxcsr(MXCSR_DEFAULT);
@@ -112,9 +111,13 @@ EXPORT_SYMBOL_GPL(kernel_fpu_begin);
 
 void kernel_fpu_end(void)
 {
+	unsigned long flags;
+
+	flags = hard_cond_local_irq_save();
 	WARN_ON_FPU(!this_cpu_read(in_kernel_fpu));
 
 	this_cpu_write(in_kernel_fpu, false);
+	hard_cond_local_irq_restore(flags);
 	preempt_enable();
 }
 EXPORT_SYMBOL_GPL(kernel_fpu_end);
@@ -217,7 +220,7 @@ int fpu__copy(struct task_struct *dst, struct task_struct *src)
  * Activate the current task's in-memory FPU context,
  * if it has not been used before:
  */
-static void fpu__initialize(struct fpu *fpu)
+void fpu__initialize(struct fpu *fpu)
 {
 	WARN_ON_FPU(fpu != &current->thread.fpu);
 
@@ -225,6 +228,7 @@ static void fpu__initialize(struct fpu *fpu)
 	fpstate_init(&fpu->state);
 	trace_x86_fpu_init_state(fpu);
 }
+EXPORT_SYMBOL_GPL(fpu__initialize);
 
 /*
  * This function must be called before we read a task's fpstate.
@@ -270,6 +274,14 @@ void fpu__prepare_write(struct fpu *fpu)
 	__fpu_invalidate_fpregs_state(fpu);
 }
 
+#ifdef CONFIG_IPIPE
+#define FWAIT_PROLOGUE "sti\n"
+#define FWAIT_EPILOGUE "cli\n"
+#else
+#define FWAIT_PROLOGUE
+#define FWAIT_EPILOGUE
+#endif
+
 /*
  * Drops current FPU state: deactivates the fpregs and
  * the fpstate. NOTE: it still leaves previous contents
@@ -281,19 +293,22 @@ void fpu__prepare_write(struct fpu *fpu)
  */
 void fpu__drop(struct fpu *fpu)
 {
-	preempt_disable();
+	unsigned long flags;
 
+	flags = hard_preempt_disable();
 	if (fpu == &current->thread.fpu) {
 		/* Ignore delayed exceptions from user space */
-		asm volatile("1: fwait\n"
+		asm volatile(FWAIT_PROLOGUE
+			     "1: fwait\n"
 			     "2:\n"
+			     FWAIT_EPILOGUE
 			     _ASM_EXTABLE(1b, 2b));
 		fpregs_deactivate(fpu);
 	}
 
 	trace_x86_fpu_dropped(fpu);
 
-	preempt_enable();
+	hard_preempt_enable(flags);
 }
 
 /*
