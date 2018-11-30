@@ -15950,9 +15950,6 @@ static void intel_modeset_readout_hw_state(struct drm_device *dev)
 			dev_priv->active_crtcs |=
 				1 << drm_crtc_index(&crtc->base);
 
-		if (crtc->base.primary)
-			readout_plane_state(crtc);
-
 		DRM_DEBUG_KMS("[CRTC:%d:%s] hw state readout: %s\n",
 			      crtc->base.base.id, crtc->base.name,
 			      enableddisabled(crtc_state->base.active));
@@ -16162,11 +16159,9 @@ intel_modeset_setup_hw_state(struct drm_device *dev,
 		intel_sanitize_encoder(encoder);
 
 	for_each_intel_crtc(&dev_priv->drm, crtc) {
-		if (crtc) {
-			intel_sanitize_crtc(crtc, ctx);
-			intel_dump_pipe_config(crtc, crtc->config,
-					"[setup_hw_state]");
-		}
+		intel_sanitize_crtc(crtc, ctx);
+		intel_dump_pipe_config(crtc, crtc->config,
+				       "[setup_hw_state]");
 	}
 
 	intel_modeset_update_connector_atomic_state(dev);
