@@ -6,7 +6,6 @@
 config ACRN
 	bool "Enable services run on ACRN hypervisor"
 	depends on X86_64
-	depends on PARAVIRT
 	help
 	  This option is needed if were to run ACRN services linux on top of
 	  ACRN hypervisor.
