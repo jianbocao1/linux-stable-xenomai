@@ -1143,7 +1143,7 @@ static int __init acpi_bus_init(void)
 	 */
 	acpi_ec_ecdt_probe();
 
-#if defined(CONFIG_ACRN)
+#if defined(CONFIG_ACRN_GUEST)
 	status = acpi_enable_subsystem(ACPI_NO_ACPI_ENABLE | ACPI_NO_HANDLER_INIT);
 #else
 	status = acpi_enable_subsystem(ACPI_NO_ACPI_ENABLE);
