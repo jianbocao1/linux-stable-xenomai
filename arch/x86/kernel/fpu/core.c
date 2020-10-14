@@ -220,7 +220,7 @@ int fpu__copy(struct task_struct *dst, struct task_struct *src)
  * Activate the current task's in-memory FPU context,
  * if it has not been used before:
  */
-void fpu__initialize(struct fpu *fpu)
+static void fpu__initialize(struct fpu *fpu)
 {
 	WARN_ON_FPU(fpu != &current->thread.fpu);
 
@@ -228,7 +228,6 @@ void fpu__initialize(struct fpu *fpu)
 	fpstate_init(&fpu->state);
 	trace_x86_fpu_init_state(fpu);
 }
-EXPORT_SYMBOL_GPL(fpu__initialize);
 
 /*
  * This function must be called before we read a task's fpstate.
