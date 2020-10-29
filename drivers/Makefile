@@ -192,3 +192,5 @@ obj-$(CONFIG_INTERCONNECT)	+= interconnect/
 obj-$(CONFIG_COUNTER)		+= counter/
 obj-$(CONFIG_X86_TCC_PTCM)	+= tcc/
 
+
+obj-$(CONFIG_XENOMAI) += xenomai/
