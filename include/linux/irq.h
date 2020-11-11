@@ -10,6 +10,7 @@
  * Thanks. --rmk
  */
 
+
 #include <linux/cache.h>
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
@@ -1148,6 +1149,7 @@ int __irq_alloc_domain_generic_chips(struct irq_domain *d, int irqs_per_chip,
 					 handler, clr, set, flags);	\
 })
 
+void kfree(const void *);
 static inline void irq_free_generic_chip(struct irq_chip_generic *gc)
 {
 	kfree(gc);

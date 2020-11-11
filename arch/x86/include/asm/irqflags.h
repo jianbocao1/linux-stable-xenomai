@@ -77,6 +77,20 @@ static inline int native_irqs_disabled(void)
 	return !(flags & X86_EFLAGS_IF);
 }
 
+/* Merge virtual+real interrupt mask bits into a single word. */
+static inline unsigned long arch_mangle_irq_bits(int virt, unsigned long real)
+{
+       return (real & ~(1L << 31)) | ((unsigned long)(virt != 0) << 31);
+}
+
+/* Converse operation of arch_mangle_irq_bits() */
+static inline int arch_demangle_irq_bits(unsigned long *x)
+{
+       int virt = (*x & (1L << 31)) != 0;
+       *x &= ~(1L << 31);
+       return virt;
+}
+
 #endif
 
 #ifdef CONFIG_PARAVIRT_XXL
@@ -122,20 +136,6 @@ static inline __cpuidle void arch_safe_halt(void)
 {
        barrier();
        __ipipe_halt_root(0);
-}
-
-/* Merge virtual+real interrupt mask bits into a single word. */
-static inline unsigned long arch_mangle_irq_bits(int virt, unsigned long real)
-{
-       return (real & ~(1L << 31)) | ((unsigned long)(virt != 0) << 31);
-}
-
-/* Converse operation of arch_mangle_irq_bits() */
-static inline int arch_demangle_irq_bits(unsigned long *x)
-{
-       int virt = (*x & (1L << 31)) != 0;
-       *x &= ~(1L << 31);
-       return virt;
 }
 
 #else /* !CONFIG_IPIPE */

@@ -45,6 +45,10 @@
 
 #include "process.h"
 
+#ifdef CONFIG_IPIPE
+	void __ipipe_halt_root(int use_mwait);
+#endif
+
 /*
  * per-CPU TSS segments. Threads are completely 'soft' on Linux,
  * no more per-task TSS's. The TSS size is kept cacheline-aligned

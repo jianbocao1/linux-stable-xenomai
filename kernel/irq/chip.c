@@ -20,6 +20,8 @@
 
 #include "internals.h"
 
+void cond_unmask_eoi_irq(struct irq_desc *desc, struct irq_chip *chip);
+
 static irqreturn_t bad_chained_irq(int irq, void *dev_id)
 {
 	WARN_ONCE(1, "Chained irq %d should not call an action\n", irq);
@@ -1456,7 +1458,11 @@ void handle_fasteoi_ack_irq(struct irq_desc *desc)
 	preflow_handler(desc);
 	handle_irq_event(desc);
 
+#ifdef CONFIG_IPIPE
+	cond_release_fasteoi_irq(desc, chip);
+#else  /* !CONFIG_IPIPE */
 	cond_unmask_eoi_irq(desc, chip);
+#endif	/* !CONFIG_IPIPE */
 
 	raw_spin_unlock(&desc->lock);
 	return;
@@ -1506,7 +1512,11 @@ void handle_fasteoi_mask_irq(struct irq_desc *desc)
 	preflow_handler(desc);
 	handle_irq_event(desc);
 
+#ifdef CONFIG_IPIPE
+	cond_release_fasteoi_irq(desc, chip);
+#else  /* !CONFIG_IPIPE */
 	cond_unmask_eoi_irq(desc, chip);
+#endif	/* !CONFIG_IPIPE */
 
 	raw_spin_unlock(&desc->lock);
 	return;

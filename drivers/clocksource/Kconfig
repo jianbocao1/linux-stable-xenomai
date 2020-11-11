@@ -33,6 +33,7 @@ config CLKSRC_MMIO
 
 config BCM2835_TIMER
 	bool "BCM2835 timer driver" if COMPILE_TEST
+	depends on (ARM || ARM64)
 	select CLKSRC_MMIO
 	help
 	  Enables the support for the BCM2835 timer driver.
@@ -57,6 +58,7 @@ config DIGICOLOR_TIMER
 
 config DW_APB_TIMER
 	bool "DW APB timer driver" if COMPILE_TEST
+	depends on (ARM || ARM64)
 	help
 	  Enables the support for the dw_apb timer.
 
@@ -319,6 +321,7 @@ config ARC_TIMERS_64BIT
 
 config ARM_ARCH_TIMER
 	bool
+	depends on (ARM || ARM64)
 	select TIMER_OF if OF
 	select TIMER_ACPI if ACPI
 
@@ -387,14 +390,14 @@ config SUN50I_ERRATUM_UNKNOWN1
 
 config ARM_GLOBAL_TIMER
 	bool "Support for the ARM global timer" if COMPILE_TEST
+	depends on (ARM || ARM64)
 	select TIMER_OF if OF
-	depends on ARM
 	help
 	  This options enables support for the ARM global timer unit
 
 config ARM_TIMER_SP804
 	bool "Support for Dual Timer SP804 module" if COMPILE_TEST
-	depends on GENERIC_SCHED_CLOCK && CLKDEV_LOOKUP
+	depends on (ARM || ARM64) && GENERIC_SCHED_CLOCK && CLKDEV_LOOKUP
 	select CLKSRC_MMIO
 	select TIMER_OF if OF
 

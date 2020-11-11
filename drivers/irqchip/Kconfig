@@ -89,7 +89,7 @@ config ALPINE_MSI
 
 config AL_FIC
 	bool "Amazon's Annapurna Labs Fabric Interrupt Controller"
-	depends on OF || COMPILE_TEST
+	depends on ( OF || COMPILE_TEST ) && ARM_GIC
 	select GENERIC_IRQ_CHIP
 	select IRQ_DOMAIN
 	help
@@ -318,7 +318,7 @@ config INGENIC_IRQ
 config INGENIC_TCU_IRQ
 	bool "Ingenic JZ47xx TCU interrupt controller"
 	default MACH_INGENIC
-	depends on MIPS || COMPILE_TEST
+	depends on MIPS
 	select MFD_SYSCON
 	select GENERIC_IRQ_CHIP
 	help
