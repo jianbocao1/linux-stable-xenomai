@@ -238,7 +238,9 @@ __visible unsigned int __irq_entry do_IRQ(struct pt_regs *regs)
 	unsigned vector = ~regs->orig_ax;
 
 	desc = __this_cpu_read(vector_irq[vector]);
+#ifdef CONFIG_IPIPE
 	__ipipe_move_root_irq(desc);
+#endif
 	entering_irq();
 
 	/* entering_irq() tells RCU that we're not quiescent.  Check it. */

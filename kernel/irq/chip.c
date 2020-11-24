@@ -20,7 +20,7 @@
 
 #include "internals.h"
 
-void cond_unmask_eoi_irq(struct irq_desc *desc, struct irq_chip *chip);
+static inline void cond_unmask_eoi_irq(struct irq_desc *desc, struct irq_chip *chip);
 
 static irqreturn_t bad_chained_irq(int irq, void *dev_id)
 {
